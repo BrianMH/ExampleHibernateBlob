@@ -6,6 +6,8 @@ import model.Teacher;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -154,11 +156,15 @@ public class App {
         Session remSess = App.curSessFactory.openSession();
         Transaction transaction = remSess.beginTransaction();
         try {
-            remSess.remove(idDeptMap.getOrDefault(idToRemove, null));
+            Department toRemove = idDeptMap.getOrDefault(idToRemove, null);
+            toRemove = remSess.merge(toRemove); // detached -> attach to session
+            toRemove.removeAllTeachers();
+            remSess.remove(toRemove); // then remove all references
+            transaction.commit();
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid deletion parsed... Quitting operation.");
+            transaction.rollback();
         }
-        transaction.commit();
         remSess.close();
     }
 

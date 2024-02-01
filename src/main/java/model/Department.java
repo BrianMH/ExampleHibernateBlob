@@ -2,6 +2,7 @@ package model;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -19,16 +20,40 @@ public class Department implements Serializable  {
     @GeneratedValue( strategy=GenerationType.IDENTITY )
     private int deptId;
     private String deptName;
+    @OneToMany(mappedBy = "department")
+    private List<Teacher> teacherList;
+
     public Department(int deptId, String deptName) {
         super();
         this.deptId = deptId;
         this.deptName = deptName;
+        this.teacherList = new ArrayList<>();
+    }
+
+    public Department(int deptId, String deptName, List<Teacher> tList) {
+        super();
+        this.deptId = deptId;
+        this.deptName = deptName;
+        this.teacherList = tList;
     }
 
     public Department() {}
 
     public Department(String deptName) {
         this.deptName = deptName;
+    }
+
+    public List<Teacher> getTeacherList() {
+        return this.teacherList;
+    }
+
+    public void removeAllTeachers() {
+        this.teacherList.forEach(curTeach -> curTeach.setDepartment(null));
+        this.teacherList = new ArrayList<>();
+    }
+
+    public void addTeacherToList(Teacher toAdd) {
+        this.teacherList.add(toAdd);
     }
 
     public int getDeptId() {
